@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 
+app.use(express.json())
+
 let persons = [
   {
     "name": "Arto Hellas",
@@ -55,6 +57,30 @@ app.delete('/api/persons/:id', (request, response) => {
   persons = persons.filter(person => person.id !== id)
 
   response.status(204).end()
+})
+
+app.post('/api/persons', (request, response) => {
+  const person = request.body;
+
+  if (!person || !person.name || !person.number) {
+    return response.status(400).json({error: 'The name or number is missing'}).end()
+  }
+
+  const duplicatePerson = persons.find(p => p.name === person.name)
+  if (duplicatePerson) {
+    return response.status(400).json({error: 'Name must be unique'}).end()
+  }
+  const min = 1;
+  const max = 100000;
+
+  const newPerson = {
+    name: person.name,
+    number: person.number,
+    id: Math.floor(Math.random() * (max - min)) + min,
+  }
+  persons = persons.concat(newPerson);
+
+  response.status(201).json(newPerson)
 })
 
 
