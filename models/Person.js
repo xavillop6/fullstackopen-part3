@@ -2,8 +2,13 @@ const { Schema, model } = require('mongoose')
 var uniqueValidator = require('mongoose-unique-validator');
 
 const personSchema = new Schema({
-    name: { type: String, index: true, unique: true, required: true },
-    number: { type: String, required: true }
+    name: { type: String, index: true, unique: true, required: true, minLength: 3 },
+    number: { type: String, required: true, validate: {
+        validator: function(v) {
+          return /^\d{2,3}-\d{7,8}$/.test(v);
+        },
+        message: props => `${props.value} is not a valid phone number!`
+      }, }
 })
 
 personSchema.plugin(uniqueValidator);
