@@ -7,6 +7,8 @@ const cors = require('cors')
 const app = express()
 
 const Person = require('./models/Person');
+const errorHandler = require('./middleware/errorHandler')
+const unknownEndpoint = require('./middleware/unknownEndpoint')
 
 app.use(cors())
 app.use(express.static('build'))
@@ -42,7 +44,7 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   const { id } = request.params;
   Person.findById(id).then(person => {
     if (person) {
@@ -50,14 +52,14 @@ app.get('/api/persons/:id', (request, response) => {
     } else {
       response.status(404).end()
     }
-  })
+  }).catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
   const { id } = request.params;
   Person.findByIdAndRemove(id).then(result => {
-      response.status(204).end()
-  });
+    response.status(204).end()
+  }).catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response) => {
@@ -83,6 +85,9 @@ app.post('/api/persons', (request, response) => {
   })
 
 })
+
+app.use(unknownEndpoint)
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
