@@ -1,5 +1,5 @@
 require('dotenv').config()
-require('./mongo-connection');
+require('./mongo-connection')
 
 const express = require('express')
 const morgan = require('morgan')
@@ -60,7 +60,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
   }).catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const person = request.body;
 
   if (!person || !person.name || !person.number) {
@@ -68,9 +68,9 @@ app.post('/api/persons', (request, response) => {
   }
 
   //const duplicatePerson = persons.find(p => p.name === person.name)
-  /*if (duplicatePerson) {
-    return response.status(400).json({error: 'Name must be unique'}).end()
-  }*/
+  //if (duplicatePerson) {
+  //  return response.status(400).json({error: 'Name must be unique'}).end()
+  //}
 
   const newPerson = new Person({
     name: person.name,
@@ -79,7 +79,7 @@ app.post('/api/persons', (request, response) => {
 
   newPerson.save().then(savedPerson => {
     response.status(201).json(savedPerson)
-  })
+  }).catch(error => next(error))
 
 })
 
