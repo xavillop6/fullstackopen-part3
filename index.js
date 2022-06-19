@@ -26,16 +26,15 @@ app.use(morgan(function (tokens, req, res) {
   ].join(' ')
 }))
 
-
-app.get('/info', (request, response) => {
-  let num = persons.length;
-
-  const currentDate = new Date();
+app.get('/info', (request, response, next) => {
+  Person.countDocuments({}).then(count => {
+    const currentDate = new Date();
   
-  response.send(`
-    <p>Phonebook has info for ${num} people</p>
-    <p>${currentDate}</p>
-    `)
+    response.send(`
+      <p>Phonebook has info for ${count} people</p>
+      <p>${currentDate}</p>
+      `)
+  }).catch(error => next(error))
 })
 
 app.get('/api/persons', (request, response) => {
@@ -43,7 +42,6 @@ app.get('/api/persons', (request, response) => {
     response.json(persons)
   })
 })
-
 app.get('/api/persons/:id', (request, response, next) => {
   const { id } = request.params;
   Person.findById(id).then(person => {
