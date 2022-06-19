@@ -80,10 +80,24 @@ app.post('/api/persons', (request, response) => {
   })
 
   newPerson.save().then(savedPerson => {
-    console.log(savedPerson);
     response.status(201).json(savedPerson)
   })
 
+})
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then(updatedPerson => {
+      response.json(updatedPerson)
+    })
+    .catch(error => next(error))
 })
 
 app.use(unknownEndpoint)
