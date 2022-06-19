@@ -1,7 +1,12 @@
+require('dotenv').config()
+require('./mongo-connection');
+
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const app = express()
+
+const Person = require('./models/Person');
 
 app.use(cors())
 app.use(express.static('build'))
@@ -19,29 +24,6 @@ app.use(morgan(function (tokens, req, res) {
   ].join(' ')
 }))
 
-let persons = [
-  {
-    "name": "Arto Hellas",
-    "number": "040-123456",
-    "id": 1
-    },
-  {
-    "name": "Ada Lovelace",
-    "number": "39-44-5323523",
-    "id": 2
-    },
-  {
-    "name": "Dan Abramov",
-    "number": "12-43-234345",
-    "id": 3
-    },
-  {
-    "name": "Mary Poppendieck",
-    "number": "39-23-6423122",
-    "id": 4
-    }
-]
-
 
 app.get('/info', (request, response) => {
   let num = persons.length;
@@ -55,24 +37,27 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+  Person.find({}).then(persons => {
+    response.json(persons)
+  })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const person = persons.find(person => person.id === id)
-  if (person) {
-    response.json(person)
-  } else {
-    response.status(404).end()
-  }
+  const { id } = request.params;
+  Person.findById(id).then(person => {
+    if (person) {
+      response.json(person)
+    } else {
+      response.status(404).end()
+    }
+  })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  persons = persons.filter(person => person.id !== id)
-
-  response.status(204).end()
+  const { id } = request.params;
+  Person.findByIdAndRemove(id).then(result => {
+      response.status(204).end()
+  });
 })
 
 app.post('/api/persons', (request, response) => {
@@ -82,23 +67,22 @@ app.post('/api/persons', (request, response) => {
     return response.status(400).json({error: 'The name or number is missing'}).end()
   }
 
-  const duplicatePerson = persons.find(p => p.name === person.name)
-  if (duplicatePerson) {
+  //const duplicatePerson = persons.find(p => p.name === person.name)
+  /*if (duplicatePerson) {
     return response.status(400).json({error: 'Name must be unique'}).end()
-  }
-  const min = 1;
-  const max = 100000;
+  }*/
 
-  const newPerson = {
+  const newPerson = new Person({
     name: person.name,
-    number: person.number,
-    id: Math.floor(Math.random() * (max - min)) + min,
-  }
-  persons = persons.concat(newPerson);
+    number: person.number
+  })
 
-  response.status(201).json(newPerson)
+  newPerson.save().then(savedPerson => {
+    console.log(savedPerson);
+    response.status(201).json(savedPerson)
+  })
+
 })
-
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
