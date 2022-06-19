@@ -3,7 +3,7 @@ var uniqueValidator = require('mongoose-unique-validator');
 
 const personSchema = new Schema({
     name: { type: String, index: true, unique: true, required: true, minLength: 3 },
-    number: { type: String, required: true, validate: {
+    number: { type: String, required: true, minLength: 8, validate: {
         validator: function(v) {
           return /^\d{2,3}-\d{7,8}$/.test(v);
         },
