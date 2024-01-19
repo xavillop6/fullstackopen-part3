@@ -6,14 +6,13 @@ const morgan = require('morgan')
 const cors = require('cors')
 const app = express()
 
-const Person = require('./models/Person');
+const Person = require('./models/Person')
 const errorHandler = require('./middleware/errorHandler')
 const unknownEndpoint = require('./middleware/unknownEndpoint')
 
 app.use(cors())
 app.use(express.static('build'))
 app.use(express.json())
-
 
 app.use(morgan(function (tokens, req, res) {
   return [
@@ -28,8 +27,8 @@ app.use(morgan(function (tokens, req, res) {
 
 app.get('/info', (request, response, next) => {
   Person.countDocuments({}).then(count => {
-    const currentDate = new Date();
-  
+    const currentDate = new Date()
+
     response.send(`
       <p>Phonebook has info for ${count} people</p>
       <p>${currentDate}</p>
@@ -43,7 +42,7 @@ app.get('/api/persons', (request, response) => {
   })
 })
 app.get('/api/persons/:id', (request, response, next) => {
-  const { id } = request.params;
+  const { id } = request.params
   Person.findById(id).then(person => {
     if (person) {
       response.json(person)
@@ -54,23 +53,23 @@ app.get('/api/persons/:id', (request, response, next) => {
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
-  const { id } = request.params;
+  const { id } = request.params
   Person.findByIdAndRemove(id).then(result => {
     response.status(204).end()
   }).catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response, next) => {
-  const person = request.body;
+  const person = request.body
 
   if (!person || !person.name || !person.number) {
-    return response.status(400).json({error: 'The name or number is missing'}).end()
+    return response.status(400).json({ error: 'The name or number is missing' }).end()
   }
 
-  //const duplicatePerson = persons.find(p => p.name === person.name)
-  //if (duplicatePerson) {
+  // const duplicatePerson = persons.find(p => p.name === person.name)
+  // if (duplicatePerson) {
   //  return response.status(400).json({error: 'Name must be unique'}).end()
-  //}
+  // }
 
   const newPerson = new Person({
     name: person.name,
@@ -80,7 +79,6 @@ app.post('/api/persons', (request, response, next) => {
   newPerson.save().then(savedPerson => {
     response.status(201).json(savedPerson)
   }).catch(error => next(error))
-
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
@@ -88,7 +86,7 @@ app.put('/api/persons/:id', (request, response, next) => {
 
   const person = {
     name: body.name,
-    number: body.number,
+    number: body.number
   }
 
   Person.findByIdAndUpdate(request.params.id, person, { new: true, runValidators: true })
